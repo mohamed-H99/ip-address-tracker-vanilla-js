@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="./assets/css/main.css" />
+    <title>IP Address Tracker - Vanilla Js</title>
+  </head>
+  <body>
+    <!-- start::header -->
+    <header class="main-header">
+      <div
+        class="
+          main-header__wrapper
+          p-6
+          h-72
+          sm:h-64
+          lg:h-52
+          flex flex-col
+          gap-6
+          justify-start
+          items-center
+        "
+      >
+        <h1 class="text-3xl text-white">IP Address Tracker</h1>
+        <form class="main-header__form">
+          <div
+            class="
+              relative
+              shadow-xl
+              transform
+              transition-transform
+              hover:scale-110
+              w-80
+              sm:w-88
+              md:w-96
+              max-w-full
+              overflow-hidden
+              rounded-xl
+              h-12
+            "
+          >
+            <input
+              id="searchInput"
+              name="searchInput"
+              class="w-full h-full outline-none p-6 pr-20"
+              type="text"
+              placeholder="Search for any IP address or domain"
+            />
+            <button
+              class="
+                absolute
+                right-0
+                bg-black
+                z-10
+                h-full
+                px-5
+                transition-colors
+              "
+            >
+              <img
+                class="w-2"
+                src="./assets/images/svg/icon-arrow.svg"
+                alt="arrow"
+              />
+            </button>
+          </div>
+        </form>
+        <div class="main-header__content">
+          <div
+            class="
+              main-header__content-wrapper
+              flex
+              justify-center
+              items-center
+              shadow-xl
+              w-80
+              max-w-full
+              sm:w-auto
+              max-w-full
+              p-6
+              rounded-xl
+              bg-white
+              max-w-full
+            "
+          >
+            <div id="loader" class="lds-ring">
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+
+            <ul
+              class="
+                main-header__content-list
+                text-center
+                sm:text-left
+                grid
+                gap-6
+                lg:gap-8
+                sm:grid-cols-2
+                lg:grid-cols-4
+              "
+            >
+              <li class="main-header__content-item">
+                <h5
+                  class="
+                    uppercase
+                    text-gray
+                    mb-1
+                    text-xs
+                    tracking-widest
+                    font-semibold
+                  "
+                >
+                  IP Address
+                </h5>
+                <p id="ip" class="font-medium text-xl text-gray-dark"></p>
+              </li>
+              <li class="main-header__content-item">
+                <h5
+                  class="
+                    uppercase
+                    text-gray
+                    mb-1
+                    text-xs
+                    tracking-widest
+                    font-semibold
+                  "
+                >
+                  Location
+                </h5>
+                <p id="location" class="font-medium text-xl text-gray-dark"></p>
+              </li>
+              <li class="main-header__content-item">
+                <h5
+                  class="
+                    uppercase
+                    text-gray
+                    mb-1
+                    text-xs
+                    tracking-widest
+                    font-semibold
+                  "
+                >
+                  Timezone
+                </h5>
+                <p id="timezone" class="font-medium text-xl text-gray-dark"></p>
+              </li>
+              <li class="main-header__content-item">
+                <h5
+                  class="
+                    uppercase
+                    text-gray
+                    mb-1
+                    text-xs
+                    tracking-widest
+                    font-semibold
+                  "
+                >
+                  Isp
+                </h5>
+                <p id="isp" class="font-medium text-xl text-gray-dark"></p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- end::header -->
+
+    <!-- start::content -->
+    <div class="main-map relative">
+      <div class="main-map__wrapper absolute top-0 left-0 w-full max-w-full">
+        <!-- start::map -->
+        <div id="map"></div>
+        <!-- end::map -->
+      </div>
+    </div>
+    <!-- end::content -->
+
+    <!-- scripts -->
+    <script
+      src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""
+    ></script>
+    <script>
+      // map
+      var myMap = L.map(map, {
+        center: [51.505, -0.09],
+        zoom: 8,
+        zoomControl: false,
+        attributionControl: false,
+        scrollWheelZoom: false,
+        preferCanvas: true,
+      });
+
+      L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(myMap);
+
+      var myIcon = L.icon({
+        iconUrl: "./assets/images/svg/icon-location.svg",
+        iconSize: [55, 65],
+        iconAnchor: [30, 30],
+        popupAnchor: [-3, -0],
+        shadowUrl: "my-icon-shadow.png",
+        shadowSize: [0, 0],
+        shadowAnchor: [0, 0],
+      });
+
+      const markerOptions = {
+        icon: myIcon,
+        riseOnHover: true,
+      };
+    </script>
+    <script src="./assets/js/scripts.js"></script>
+  </body>
+</html>
